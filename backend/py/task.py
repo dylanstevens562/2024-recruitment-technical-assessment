@@ -13,22 +13,55 @@ class File:
 Task 1
 """
 def leafFiles(files: list[File]) -> list[str]:
-    return []
+    # creating a dictionary of parent ids allows us to access them later in constant time, doing this 
+    # with two seperate loops instead of a nested loop lets me have O(2n) which simplifies to O(n) instead of O(n^2)
+    parentIds = {}
+    res = []
+
+    for i, file in enumerate(files):
+        parentIds[i] = file.parent
+    
+    for file in files:
+        if file.id not in parentIds.values():
+            res.append(file.name)
+
+    return res
 
 
 """
 Task 2
 """
 def kLargestCategories(files: list[File], k: int) -> list[str]:
-    return []
+    # loop through files and put all categories into a list, sort by value then key and slice
+    categories = {}
+    for file in files:
+        for category in file.categories:
+            categories[category] = categories.get(category, 0) + 1
+
+    sortedCategories = sorted(categories.items(), key=lambda x: (-x[1], x[0]))
+    res = [key for key, value in sortedCategories]
+
+    return res[:k]
 
 
 """
 Task 3
 """
 def largestFileSize(files: list[File]) -> int:
-    return 0
+    # use recursion to find the highest level parent for each file and compare sizes
+    maxSize = 0
+    for file in files:
+        maxSize = max(getSize(file, files), maxSize)
 
+    return maxSize
+
+def getSize(file, files):
+    size = file.size
+    for element in files:
+        if file.id == element.parent:
+            size += getSize(element, files)
+
+    return size
 
 if __name__ == '__main__':
     testFiles = [
@@ -46,6 +79,7 @@ if __name__ == '__main__':
         File(233, "Folder3", ["Folder"], -1, 4096),
     ]
 
+    
     assert sorted(leafFiles(testFiles)) == [
         "Audio.mp3",
         "Backup.zip",
